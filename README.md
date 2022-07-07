@@ -1,3 +1,4 @@
+[![Logo Image](https://api.pterodactyl.top/logos/new/pterodactyl_china_logo.png)](https://pterodactyl.top)
 # resource
 
 翼龙中国稳定版API：https://api.pterodactyl.top/releases/stable.json
