@@ -29,3 +29,13 @@ jobs:
           github-repo: "git@github.com:pterodactyl-china/documentation.git"
           # 注意替换为你的 Gitee 目标仓库地址
           gitee-repo: "git@gitee.com:pterodactyl-china/documentation.git"
+    - name: 同步 eggs 到 Gitee
+      uses: x-dr/sync-repo-to-gitee@master
+      env:
+          # 在 Settings->Secrets 配置 GITEE_KEY
+          SSH_KEY: ${{ secrets.GITEE_KEY }}
+      with:
+          # 注意替换为你的 GitHub 源仓库地址
+          github-repo: "git@github.com:pterodactyl-china/eggs.git"
+          # 注意替换为你的 Gitee 目标仓库地址
+          gitee-repo: "git@gitee.com:pterodactyl-china/eggs.git"
