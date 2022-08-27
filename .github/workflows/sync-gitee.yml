@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: 同步到 Gitee
+    - name: 同步 panel 到 Gitee
       uses: x-dr/sync-repo-to-gitee@master
       env:
           # 在 Settings->Secrets 配置 GITEE_KEY
@@ -19,3 +19,13 @@ jobs:
           github-repo: "git@github.com:pterodactyl-china/panel.git"
           # 注意替换为你的 Gitee 目标仓库地址
           gitee-repo: "git@gitee.com:vlssu/panel-chinese.git"
+    - name: 同步 documentation 到 Gitee
+      uses: x-dr/sync-repo-to-gitee@master
+      env:
+          # 在 Settings->Secrets 配置 GITEE_KEY
+          SSH_KEY: ${{ secrets.GITEE_KEY }}
+      with:
+          # 注意替换为你的 GitHub 源仓库地址
+          github-repo: "git@github.com:pterodactyl-china/documentation.git"
+          # 注意替换为你的 Gitee 目标仓库地址
+          gitee-repo: "git@gitee.com:pterodactyl-china/documentation.git"
