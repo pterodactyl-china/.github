@@ -18,7 +18,7 @@ jobs:
           # 注意替换为你的 GitHub 源仓库地址
           github-repo: "git@github.com:pterodactyl-china/panel.git"
           # 注意替换为你的 Gitee 目标仓库地址
-          gitee-repo: "git@gitee.com:vlssu/panel-chinese.git"
+          gitee-repo: "git@gitee.com:vlssu/pterodactyl-panel.git"
     - name: 同步 documentation 到 Gitee
       uses: x-dr/sync-repo-to-gitee@master
       env:
