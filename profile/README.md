@@ -1,9 +1,8 @@
 
 <div align="center">
-  <h1 id="pterodactyl-china"><a href="https://pterodactyl.top/" target="_blank">
-  <img src="https://api.pterodactyl.top/logos/new/pterodactyl_china_logo.png" alt="logo">
-  </a></h1>
 
+[![Logo Image](https://api.pterodactyl.top/logos/new/pterodactyl_china_logo.png)](https://pterodactyl.top)
+---
 ![GitHub Releases](https://img.shields.io/github/downloads/pterodactyl-china/panel/total?style=flat-square)
 ![GitHub Releases](https://img.shields.io/github/v/release/pterodactyl-china/panel?style=flat-square&logo=appveyor)
 [![KOOK](https://img.shields.io/badge/dynamic/json?color=44cc11&label=KOOK&query=online_count&suffix=%20ONLINE&url=https%3A%2F%2Fwww.kookapp.cn%2Fapi%2Fguilds%2F3158748478503304%2Fwidget.json&style=flat-square&logo=googlechat)](https://kook.top/FRyhXY)
