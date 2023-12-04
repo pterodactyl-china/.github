@@ -6,36 +6,25 @@ on:
     - cron:  '0 16 * * *'
 
 jobs:
-  build:
+  repo-sync:
     runs-on: ubuntu-latest
     steps:
-    - name: 同步 panel 到 Gitee
-      uses: x-dr/sync-repo-to-gitee@master
-      env:
-          # 在 Settings->Secrets 配置 GITEE_KEY
-          SSH_KEY: ${{ secrets.GITEE_KEY }}
-      with:
-          # 注意替换为你的 GitHub 源仓库地址
-          github-repo: "git@github.com:pterodactyl-china/panel.git"
-          # 注意替换为你的 Gitee 目标仓库地址
-          gitee-repo: "git@gitee.com:vlssu/pterodactyl-panel.git"
-    - name: 同步 documentation 到 Gitee
-      uses: x-dr/sync-repo-to-gitee@master
-      env:
-          # 在 Settings->Secrets 配置 GITEE_KEY
-          SSH_KEY: ${{ secrets.GITEE_KEY }}
-      with:
-          # 注意替换为你的 GitHub 源仓库地址
-          github-repo: "git@github.com:pterodactyl-china/documentation.git"
-          # 注意替换为你的 Gitee 目标仓库地址
-          gitee-repo: "git@gitee.com:pterodactyl-china/documentation.git"
-    - name: 同步 eggs 到 Gitee
-      uses: x-dr/sync-repo-to-gitee@master
-      env:
-          # 在 Settings->Secrets 配置 GITEE_KEY
-          SSH_KEY: ${{ secrets.GITEE_KEY }}
-      with:
-          # 注意替换为你的 GitHub 源仓库地址
-          github-repo: "git@github.com:pterodactyl-china/eggs.git"
-          # 注意替换为你的 Gitee 目标仓库地址
-          gitee-repo: "git@gitee.com:pterodactyl-china/eggs.git"
+      - name: Mirror the Github organization repos to Gitee.
+        uses: Yikun/hub-mirror-action@master
+        with:
+          src: 'github/pterodactyl-china'
+          dst: 'gitee/pterodactyl-china'
+          dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+          dst_token:  ${{ secrets.GITEE_TOKEN }}
+          static_list: "documentation,eggs"
+          force_update: true
+      - name: Mirror the Github organization repos to Gitee.(panel)
+        uses: Yikun/hub-mirror-action@master
+        with:
+          src: 'github/pterodactyl-china'
+          dst: 'gitee/vlssu'
+          dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+          dst_token:  ${{ secrets.GITEE_TOKEN }}
+          mappings: "panel=>pterodactyl-panel"
+          static_list: "panel"
+          force_update: true
