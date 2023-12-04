@@ -16,7 +16,7 @@ jobs:
           dst: 'gitee/pterodactyl-china'
           dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
           dst_token:  ${{ secrets.GITEE_TOKEN }}
-          static_list: "documentation,eggs"
+          static_list: "documentation"
           force_update: true
       - name: Mirror the Github organization repos to Gitee.(panel)
         uses: Yikun/hub-mirror-action@master
