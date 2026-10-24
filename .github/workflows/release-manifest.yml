@@ -1,0 +1,131 @@
+name: 更新版本清单
+
+# 接收 panel / wings 等组件发版时的 repository_dispatch（event_type: release-tagged），
+# 把版本号写进 releases/latest.json，对外由 https://api.pterodactyl.top/releases/latest.json 提供，
+# 对标官方 https://cdn.pterodactyl.io/releases/latest.json。
+#
+# 也支持手动触发，便于初始化或补数据。
+
+on:
+  repository_dispatch:
+    types: [release-tagged]
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 要更新的组件字段
+        required: true
+        default: panel
+        type: choice
+        options:
+          - panel
+          - wings
+          - daemon
+          - sftp
+      version:
+        description: 版本号，例如 v1.15.2.0（可带前缀 v）
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-manifest
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: 更新 releases/latest.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 解析组件与版本
+        id: payload
+        env:
+          DISPATCH_COMPONENT: ${{ github.event.client_payload.component }}
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          INPUT_COMPONENT: ${{ inputs.component }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          COMPONENT="${DISPATCH_COMPONENT:-${INPUT_COMPONENT:-panel}}"
+          VERSION="${DISPATCH_VERSION:-${INPUT_VERSION:-}}"
+
+          if [ -z "$VERSION" ]; then
+            echo "::error::未收到版本号，无法更新清单"
+            exit 1
+          fi
+
+          case "$COMPONENT" in
+            panel|wings|daemon|sftp) ;;
+            *)
+              echo "::error::不支持的组件: $COMPONENT（仅允许 panel / wings / daemon / sftp）"
+              exit 1
+              ;;
+          esac
+
+          # 去掉 tag 前缀 v，清单里统一存放不带前缀的版本号
+          VERSION="${VERSION#v}"
+
+          echo "component=$COMPONENT" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "收到更新请求：component=$COMPONENT version=$VERSION"
+
+      - name: 写入版本号
+        id: write
+        env:
+          COMPONENT: ${{ steps.payload.outputs.component }}
+          VERSION: ${{ steps.payload.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          FILE=releases/latest.json
+          OLD=$(jq -r --arg c "$COMPONENT" '.[$c] // "未设置"' "$FILE")
+
+          # --tab 保持文件原有 tab 缩进，避免整文件 diff
+          jq --tab --arg c "$COMPONENT" --arg v "$VERSION" '.[$c] = $v' "$FILE" > latest.tmp
+          mv latest.tmp "$FILE"
+
+          if [ "$OLD" = "$VERSION" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "版本无变化（$COMPONENT 仍为 $VERSION），跳过提交"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "$COMPONENT: $OLD -> $VERSION"
+          fi
+
+          echo "----- releases/latest.json -----"
+          cat "$FILE"
+
+      - name: 汇总
+        env:
+          COMPONENT: ${{ steps.payload.outputs.component }}
+          VERSION: ${{ steps.payload.outputs.version }}
+          CHANGED: ${{ steps.write.outputs.changed }}
+        run: |
+          {
+            echo "### 版本清单更新"
+            echo ""
+            echo "| 项目 | 值 |"
+            echo "| --- | --- |"
+            echo "| 组件 | \`$COMPONENT\` |"
+            echo "| 版本 | \`$VERSION\` |"
+            echo "| 是否变更 | $([ "$CHANGED" = "true" ] && echo 是 || echo 否) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 提交并推送
+        if: steps.write.outputs.changed == 'true'
+        env:
+          COMPONENT: ${{ steps.payload.outputs.component }}
+          VERSION: ${{ steps.payload.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          git config user.name 'Pterodactyl China CI'
+          git config user.email 'ci@pterodactyl.top'
+          git add releases/latest.json
+          git commit -m "chore(release): ${COMPONENT} 更新至 ${VERSION}"
+          git push
